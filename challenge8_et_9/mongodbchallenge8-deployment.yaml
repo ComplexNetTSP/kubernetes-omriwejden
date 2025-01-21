@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodbchallenge8-deployment
+  namespace: womri
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodbchallenge8
+  template:
+    metadata:
+      labels:
+        app: mongodbchallenge8
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:latest
+        ports:
+        - containerPort: 27017
+        command: ["mongod", "--bind_ip", "0.0.0.0"] # Disables authentication
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "200m"
+            memory: "200Mi"
+        livenessProbe:
+          exec:
+            command:
+            - mongo
+            - --eval
+            - "db.adminCommand('ping')" # Pings MongoDB to check if it's responsive
+          initialDelaySeconds: 5        # Wait 5 seconds before the first check
+          periodSeconds: 10             # Check every 10 seconds
+          timeoutSeconds: 5             # Timeout after 5 seconds
+          failureThreshold: 3           # Restart after 3 consecutive failures
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodbchallenge8-service
+  namespace: womri
+spec:
+  selector:
+    app: mongodbchallenge8
+  ports:
+  - protocol: TCP
+    port: 27017
+    targetPort: 27017
+  type: ClusterIP

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webnodbchallenge6-deployment
+  namespace: womri
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webnodbchallenge6
+  template:
+    metadata:
+      labels:
+        app: webnodbchallenge6
+    spec:
+      containers:
+      - name: webnodb
+        image: wejden753159/webnodbchallenge6:latest
+        ports:
+        - containerPort: 5000
+        command: ["flask", "--app", "app_without_db", "run", "--host=0.0.0.0"]

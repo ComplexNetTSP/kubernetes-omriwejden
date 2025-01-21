@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webdbchallenge8-deployment
+  namespace: womri
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webdbchallenge8
+  template:
+    metadata:
+      labels:
+        app: webdbchallenge8
+    spec:
+      containers:
+      - name: webdb
+        image: wejden753159/webdbchallenge8:latest
+        ports:
+        - containerPort: 5001
+        env:
+        - name: MONGO_HOST
+          value: "mongodbchallenge8-service.womri.svc.cluster.local"
+        - name: MONGO_PORT
+          value: "27017"
+        - name: MONGO_DB
+          value: "mydatabase"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "200m"
+            memory: "200Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5001
+          initialDelaySeconds: 5    # Wait 5 seconds before the first check
+          periodSeconds: 10         # Check every 10 seconds
+          timeoutSeconds: 2         # Timeout after 2 seconds
+          failureThreshold: 3       # Restart after 3 consecutive failures
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webdbchallenge8-service
+  namespace: womri
+spec:
+  selector:
+    app: webdbchallenge8
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5001
+  type: ClusterIP
