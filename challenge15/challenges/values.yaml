@@ -1,0 +1,66 @@
+# MongoDB configuration
+mongodb:
+  image: "mongo:latest" 
+  replicas: 1
+  storage: "1Gi"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "150m"
+    limits:
+      memory: "256Mi"
+      cpu: "300m"
+
+service:
+  ports:
+    mongodb: 27017
+
+
+
+# Web app with database (webdb)
+webdb:
+  image: wejden753159/webdbchallenge8:v2
+  replicas: 1
+  service:
+    port: 5001
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "200m"
+    limits:
+      memory: "200Mi"
+      cpu: "500m"
+
+# Web app without database (webnodb)
+webnodb:
+  image: wejden753159/webnodbchallenge7:v2
+  replicas: 1
+  service:
+    port: 5000
+  resources:
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "500Mi"
+      cpu: "500m"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  hostnames:
+    - webnodb.womri.net4255.luxbulb.org
+    - webdb.womri.net4255.luxbulb.org
+  
+hpa:
+  webnodb:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 60
+
+  webdb:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 60

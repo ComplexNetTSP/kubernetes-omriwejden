@@ -1,0 +1,49 @@
+# MongoDB configuration
+mongodb:
+  image: "wejden753159/mongodb:v1"
+  replicas: 1
+  storage: "300Mi"
+service:
+  ports:
+    mongodb: 27017
+
+
+# Web app with database (webdb)
+webdb:
+  image: wejden753159/webdbchallenge8:v2
+  replicas: 3
+  service:
+    port: 5001
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "200Mi"
+      cpu: "200m"
+
+# Web app without database (webnodb)
+webnodb:
+  image: wejden753159/webnodbchallenge7:v2
+  replicas: 2
+  service:
+    port: 5000
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "200Mi"
+      cpu: "500m"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  hostnames:
+    - webnodb.womri.net4255.luxbulb.org
+    - webdb.womri.net4255.luxbulb.org
+
+# ConfigMap for database connection
+#configMap:
+  #mongoHost: "mongodb-0.mongodb"  # DNS du StatefulSet avec Headless Service
+  #mongoPort: "27017"             # MongoDB port

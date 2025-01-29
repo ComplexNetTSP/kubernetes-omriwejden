@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  serviceName: mongodb
+  replicas: {{ .Values.mongodb.replicas }}
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: {{ .Values.mongodb.image }}
+        ports:
+        - containerPort: {{ .Values.mongodb.service.port }}
+        env:
+        - name: MONGO_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-config
+              key: MONGO_HOST
+        - name: MONGO_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-config
+              key: MONGO_PORT
+        volumeMounts:
+        - name: mongo-persistent-storage
+          mountPath: /data/db
+        resources:
+          requests:
+            memory: {{ .Values.mongodb.resources.requests.memory }}
+            cpu: {{ .Values.mongodb.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.mongodb.resources.limits.memory }}
+            cpu: {{ .Values.mongodb.resources.limits.cpu }}
+  volumeClaimTemplates:
+  - metadata:
+      name: mongo-persistent-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: {{ .Values.mongodb.storage }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  clusterIP: None  # Rendre le service "headless"
+  ports:
+  - port: {{ .Values.mongodb.service.port }}
+    targetPort: {{ .Values.mongodb.service.port }}
+  selector:
+    app: mongodb
+
