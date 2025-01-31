@@ -1,0 +1,26 @@
+kubectl apply -f mongodb-statefulset.yaml -n womri
+kubectl apply -f mongodb-service.yaml -n womri
+
+kubectl exec -it mongodb-0 -n womri -- mongosh
+rs.initiate({
+  _id: "rs0",
+  members: [
+    { _id: 0, host: "mongodb-0.mongodb.womri.svc.cluster.local:27017" },
+    { _id: 1, host: "mongodb-1.mongodb.womri.svc.cluster.local:27017" },
+    { _id: 2, host: "mongodb-2.mongodb.womri.svc.cluster.local:27017" }
+  ]
+})
+
+rs.status()
+use mydatabase
+
+db.users.insertOne({ name: "Wejden", age: 23, city: "Paris" })
+db.users.find().pretty()
+
+
+kubectl exec -it mongodb-1 -n womri -- mongosh
+rs.secondaryOk()
+use mydatabase
+db.users.find().pretty()
+mydatabase> db.users.insertOne({ name: "TestUser", age: 30, city: "Lyon" })
+MongoServerError[NotWritablePrimary]: not primary
